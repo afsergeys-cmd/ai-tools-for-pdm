@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f1e8">
+  <title>Кто выгуливает Бориса?</title>
+  <style>
+    :root { color-scheme: light; --paper:#f5f1e8; --ink:#203c31; --green:#285742; --mint:#e4eee5; --orange:#d69b61; --muted:#6d766e; --line:#dce1d8; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--paper); color:var(--ink); font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; }
+    header { max-width:1080px; margin:auto; padding:26px 28px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--line); }
+    .brand { font-weight:800; letter-spacing:-.04em; font-size:20px; } .date { color:var(--muted); font-size:14px; }
+    main { max-width:1080px; margin:auto; padding:60px 28px 70px; }
+    .intro { max-width:710px; margin-bottom:40px; } .eyebrow { color:var(--green); font-size:12px; font-weight:800; letter-spacing:.15em; text-transform:uppercase; }
+    h1 { font-size:clamp(42px,7vw,76px); line-height:.99; letter-spacing:-.065em; margin:16px 0; } .intro p { color:var(--muted); font-size:18px; line-height:1.6; max-width:570px; margin:0; }
+    .layout { display:grid; grid-template-columns:minmax(0,1.6fr) minmax(260px,.8fr); gap:22px; align-items:start; }
+    .panel { background:#fffdf8; border:1px solid var(--line); border-radius:20px; padding:26px; box-shadow:0 12px 34px #263b2d0c; }
+    h2 { font-size:23px; letter-spacing:-.04em; margin:0 0 5px; } .sub { margin:0 0 20px; color:var(--muted); font-size:14px; }
+    .slots { display:grid; gap:10px; } .slot { border:1px solid var(--line); border-radius:13px; padding:13px 14px; display:grid; grid-template-columns:70px 1fr; gap:12px; align-items:center; }
+    .time { font-weight:800; font-size:18px; } .slot-info { min-width:0; } .slot-status { font-size:13px; color:var(--muted); } .occupied { background:var(--mint); border-color:#c6d9c8; } .occupied .slot-status { color:var(--green); }
+    .book-form { display:flex; gap:8px; margin-top:17px; } input { min-width:0; flex:1; border:1px solid var(--line); border-radius:10px; padding:12px; font:inherit; } button { border:0; border-radius:10px; background:var(--green); color:white; font:700 14px inherit; padding:12px 16px; cursor:pointer; } button:hover { background:#1d4533; } button:focus-visible,input:focus-visible { outline:3px solid #d69b6180; outline-offset:2px; }
+    .feed-card { background:var(--green); color:#fffdf8; border-radius:17px; padding:22px; } .feed-card h2 { font-size:19px; } .feed-card p { color:#d6e2d8; font-size:14px; margin:7px 0 18px; line-height:1.5; } .feed-card input { width:100%; background:#fffdf8; margin-bottom:9px; } .feed-card button { background:var(--orange); color:#203c31; width:100%; } .feeding-state { font-weight:700; color:white !important; }
+    .steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:24px; } .step { color:var(--muted); font-size:13px; padding:16px; border-top:1px solid var(--line); } .step b { display:block; color:var(--ink); font-size:14px; margin-bottom:5px; }
+    #notice { min-height:24px; margin:12px 0 0; color:var(--green); font-size:14px; } #notice.error { color:#a54535; }
+    @media(max-width:720px) { header { padding:20px; } main { padding:42px 20px 50px; } .layout { grid-template-columns:1fr; } .steps { grid-template-columns:1fr; gap:0; } .step { padding:12px 4px; } }
+    @media(max-width:420px) { .panel { padding:19px; } .book-form { flex-direction:column; } .book-form button { min-height:46px; } .slot { grid-template-columns:60px 1fr; } }
+  </style>
+</head>
+<body>
+  <header><div class="brand">Догяндекс <span aria-hidden="true">·</span> Борис</div><div class="date" id="date">Загружаем дату…</div></header>
+  <main>
+    <section class="intro"><div class="eyebrow">Наш офисный хвостик</div><h1>Кто сегодня<br>выгуливает Бориса?</h1><p>Выберите удобное время для прогулки. Свободный слот — ваш, а Борис уже готов к приключениям.</p></section>
+    <div class="layout">
+      <section class="panel" aria-labelledby="walk-title">
+        <h2 id="walk-title">Прогулка с Борисом сегодня</h2><p class="sub">Пять прогулок, одно хорошее настроение.</p>
+        <div class="slots" id="slots" aria-live="polite"></div>
+        <form class="book-form" id="book-form"><input id="employee-name" maxlength="120" autocomplete="name" placeholder="Ваше имя и фамилия" aria-label="Ваше имя и фамилия" required><button type="submit">Записаться</button></form>
+        <p id="notice" role="status" aria-live="polite"></p>
+      </section>
+      <aside class="feed-card">
+        <h2>Последнее кормление</h2><p id="feeding-state" class="feeding-state">Загружаем…</p>
+        <form id="feeding-form"><input id="feeder-name" maxlength="120" autocomplete="name" placeholder="Кто покормил Бориса?" aria-label="ФИО сотрудника" required><button type="submit">Отметить кормление</button></form>
+      </aside>
+    </div>
+    <section class="steps" aria-label="Как записаться"><div class="step"><b>01 · Выберите время</b>Найдите свободный слот.</div><div class="step"><b>02 · Укажите ФИО</b>Чтобы Борис знал, кого ждать.</div><div class="step"><b>03 · Готово!</b>Ваша прогулка сохранена.</div></section>
+  </main>
+  <script>
+    const timeFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle:'long', timeZone:'Europe/Moscow' });
+    const dateFormat = new Intl.DateTimeFormat('ru-RU', { dateStyle:'short', timeStyle:'short', timeZone:'Europe/Moscow' });
+    let selectedSlot = null;
+    const slotsEl = document.querySelector('#slots');
+    const notice = document.querySelector('#notice');
+    async function refresh() {
+      const response = await fetch('/api/state');
+      const state = await response.json();
+      if (!response.ok) throw new Error(state.error || 'Не удалось загрузить данные.');
+      document.querySelector('#date').textContent = timeFormat.format(new Date(`${state.date}T12:00:00+03:00`));
+      slotsEl.replaceChildren();
+      for (const slot of state.slots) {
+        const row = document.createElement('div');
+        row.className = `slot${slot.booked_by ? ' occupied' : ''}`;
+        const time = document.createElement('div'); time.className = 'time'; time.textContent = slot.slot_time;
+        const info = document.createElement('div'); info.className = 'slot-info';
+        const status = document.createElement('div'); status.className = 'slot-status'; status.textContent = slot.booked_by ? `Занято · ${slot.booked_by}` : 'Свободно · нажмите, чтобы выбрать';
+        info.append(status); row.append(time, info);
+        if (!slot.booked_by) {
+          row.tabIndex = 0; row.setAttribute('role','button'); row.setAttribute('aria-label',`Выбрать свободный слот ${slot.slot_time}`);
+          const choose = () => { selectedSlot = slot.slot_time; document.querySelector('#employee-name').focus(); document.querySelectorAll('.slot').forEach(el => el.style.outline = ''); row.style.outline = '3px solid #d69b61'; };
+          row.addEventListener('click', choose); row.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); choose(); } });
+        }
+        slotsEl.append(row);
+      }
+      document.querySelector('#feeding-state').textContent = state.feeding ? `${state.feeding.employee_name} · ${dateFormat.format(new Date(state.feeding.fed_at))}` : 'Пока не отмечено. Борис ждёт свою порцию!';
+    }
+    async function submitForm(url, body) {
+      const response = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Не удалось сохранить.');
+      return result;
+    }
+    document.querySelector('#book-form').addEventListener('submit', async event => {
+      event.preventDefault(); notice.className = ''; notice.textContent = '';
+      if (!selectedSlot) { notice.className = 'error'; notice.textContent = 'Сначала выберите свободное время.'; return; }
+      try { const result = await submitForm('/api/book', { name:document.querySelector('#employee-name').value, slot:selectedSlot }); notice.textContent = result.message; selectedSlot = null; document.querySelector('#employee-name').value = ''; await refresh(); }
+      catch (error) { notice.className = 'error'; notice.textContent = error.message; await refresh(); }
+    });
+    document.querySelector('#feeding-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      try { await submitForm('/api/feeding', { name:document.querySelector('#feeder-name').value }); document.querySelector('#feeder-name').value = ''; await refresh(); }
+      catch (error) { document.querySelector('#feeding-state').textContent = error.message; }
+    });
+    refresh().catch(error => { notice.className = 'error'; notice.textContent = error.message; });
+  </script>
+</body>
+</html>

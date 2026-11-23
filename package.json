@@ -1,0 +1,12 @@
+{
+  "name": "dog-yandex-boris-walks",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Локальная запись сотрудников на прогулки с Борисом",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
